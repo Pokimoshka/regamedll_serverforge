@@ -17,52 +17,7 @@
 */
 
 #include "precompiled.h"
-
-//-----------------------------------------------------------------------------
-// Whitelist команд, разрешённых для point_servercommand / point_clientcommand.
-// По умолчанию разблокированы только безвредные игровые cvar.
-// Любая команда, не входящая в список, блокируется и пишется в лог.
-//-----------------------------------------------------------------------------
-static const char *g_allowedServerCommands[] =
-{
-	// безопасные игровые настройки, которые карты обычно меняют
-	"mp_roundtime",
-	"mp_freezetime",
-	"mp_buytime",
-	"mp_c4timer",
-	"sv_gravity",
-	"sv_friction",
-	"sv_stepsize",
-	"sv_maxspeed",
-	"sv_stopspeed",
-	"sv_accelerate",
-	"sv_airaccelerate",
-	"sv_wateraccelerate",
-	"sv_waterfriction",
-	nullptr
-};
-
-//-----------------------------------------------------------------------------
-// Проверка на опасные символы в аргументе команды (защита от инъекций)
-//-----------------------------------------------------------------------------
-static bool CommandContainsDangerousChars(const char *cmd)
-{
-	if (!cmd)
-		return true;
-
-	for (; *cmd; ++cmd)
-	{
-		char c = *cmd;
-		if (c == ';' || c == '|' || c == '&' || c == '`' || c == '$' ||
-			c == '<' || c == '>' || c == '(' || c == ')' || c == '{' || c == '}' ||
-			c == '!' || c == '\n' || c == '\r')
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
+#include "addons/point_command_whitelist.h"
 
 //-----------------------------------------------------------------------------
 // Проверка команды против whitelist (регистронезависимо).
@@ -75,11 +30,8 @@ static bool IsCommandAllowed(const char *cmdName)
 		return false;
 
 	// 1. встроенный whitelist безопасных команд
-	for (int i = 0; g_allowedServerCommands[i] != nullptr; ++i)
-	{
-		if (Q_stricmp(cmdName, g_allowedServerCommands[i]) == 0)
-			return true;
-	}
+	if (IsBuiltinCommandAllowed(cmdName))
+		return true;
 
 	// 2. расширяемый whitelist из cvar
 	const char *list = point_servercommand_whitelist.string;

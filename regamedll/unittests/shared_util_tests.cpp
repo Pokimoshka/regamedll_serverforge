@@ -1,5 +1,6 @@
 #include "precompiled.h"
 #include "cppunitlite/TestHarness.h"
+#include "addons/point_command_whitelist.h"
 
 // Regression test for the SharedParse() global-buffer overflow.
 // s_shared_token is char[1500]; SharedParse() must never emit a token that
@@ -103,4 +104,40 @@ TEST(BufWPrintfAppend, SharedUtil, 10)
 	tmp = BufWPrintf(tmp, remainder, L" %d", 42);
 	CHECK("wide append content", wcscmp(buf, L"head: 42") == 0);
 	CHECK("wide second remainder", remainder == (int)(ARRAYSIZE(buf) - 8));
+}
+
+// Regression tests for the point_command command whitelist and injection filter.
+TEST(DangerousCharsBlocked, PointCommandWhitelist, 10)
+{
+	CHECK("semicolon blocked", CommandContainsDangerousChars("cmd;quit"));
+	CHECK("pipe blocked", CommandContainsDangerousChars("a|b"));
+	CHECK("ampersand blocked", CommandContainsDangerousChars("a&b"));
+	CHECK("backtick blocked", CommandContainsDangerousChars("a`b"));
+	CHECK("dollar blocked", CommandContainsDangerousChars("a$b"));
+	CHECK("angle brackets blocked", CommandContainsDangerousChars("a<b>c"));
+	CHECK("parentheses blocked", CommandContainsDangerousChars("a(b)c"));
+	CHECK("braces blocked", CommandContainsDangerousChars("a{b}c"));
+	CHECK("exclamation blocked", CommandContainsDangerousChars("a!b"));
+	CHECK("newline blocked", CommandContainsDangerousChars("a\nb"));
+	CHECK("nullptr is dangerous", CommandContainsDangerousChars(nullptr));
+}
+
+TEST(BenignCharsAllowed, PointCommandWhitelist, 10)
+{
+	CHECK("number allowed", !CommandContainsDangerousChars("5"));
+	CHECK("word allowed", !CommandContainsDangerousChars("de_dust2"));
+	CHECK("empty allowed", !CommandContainsDangerousChars(""));
+	CHECK("underscore allowed", !CommandContainsDangerousChars("mp_roundtime"));
+}
+
+TEST(BuiltinWhitelist, PointCommandWhitelist, 10)
+{
+	CHECK("mp_roundtime allowed", IsBuiltinCommandAllowed("mp_roundtime"));
+	CHECK("sv_gravity allowed", IsBuiltinCommandAllowed("sv_gravity"));
+	CHECK("case-insensitive match", IsBuiltinCommandAllowed("MP_ROUNDTIME"));
+	CHECK("sv_cheats blocked", !IsBuiltinCommandAllowed("sv_cheats"));
+	CHECK("quit blocked", !IsBuiltinCommandAllowed("quit"));
+	CHECK("exec blocked", !IsBuiltinCommandAllowed("exec"));
+	CHECK("empty blocked", !IsBuiltinCommandAllowed(""));
+	CHECK("nullptr blocked", !IsBuiltinCommandAllowed(nullptr));
 }
