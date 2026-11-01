@@ -65,11 +65,15 @@ wchar_t *BufWPrintf(wchar_t *buf, int &len, const wchar_t *fmt, ...)
 
 	va_list argptr;
 
+	const int startLen = wcslen(buf);
+
 	va_start(argptr, fmt);
 	Q_vsnwprintf(buf, len, fmt, argptr);
 	va_end(argptr);
 
-	len -= wcslen(buf);
+	// Вычитаем только реально записанные символы, а не длину всего буфера
+	const int written = wcslen(buf) - startLen;
+	len -= written;
 	return buf + wcslen(buf);
 }
 

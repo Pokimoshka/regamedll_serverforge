@@ -65,17 +65,46 @@ static bool CommandContainsDangerousChars(const char *cmd)
 }
 
 //-----------------------------------------------------------------------------
-// Проверка команды против whitelist (регистронезависимо)
+// Проверка команды против whitelist (регистронезависимо).
+// Проверяется встроенный список безопасных команд + расширяемый через cvar
+// mp_point_servercommand_whitelist (разделители: пробел, запятая, табуляция).
 //-----------------------------------------------------------------------------
 static bool IsCommandAllowed(const char *cmdName)
 {
 	if (!cmdName || cmdName[0] == '\0')
 		return false;
 
+	// 1. встроенный whitelist безопасных команд
 	for (int i = 0; g_allowedServerCommands[i] != nullptr; ++i)
 	{
 		if (Q_stricmp(cmdName, g_allowedServerCommands[i]) == 0)
 			return true;
+	}
+
+	// 2. расширяемый whitelist из cvar
+	const char *list = point_servercommand_whitelist.string;
+	if (list && list[0] != '\0')
+	{
+		const char *p = list;
+		while (*p)
+		{
+			// пропускаем разделители
+			while (*p == ' ' || *p == ',' || *p == '\t')
+				p++;
+			if (*p == '\0')
+				break;
+
+			// находим конец токена
+			const char *end = p;
+			while (*end && *end != ' ' && *end != ',' && *end != '\t')
+				end++;
+
+			const int tokenLen = end - p;
+			if (tokenLen > 0 && (int)Q_strlen(cmdName) == tokenLen && Q_strnicmp(cmdName, p, tokenLen) == 0)
+				return true;
+
+			p = end;
+		}
 	}
 
 	return false;
