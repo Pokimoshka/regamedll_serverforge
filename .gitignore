@@ -1,5 +1,7 @@
 **/build
 *.bat
+!regamedll/msvc/PreBuild.bat
+!regamedll/msvc/PostBuild.bat
 *.log
 *.lnk
 *.aps
