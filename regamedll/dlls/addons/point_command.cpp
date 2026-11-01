@@ -73,6 +73,25 @@ static void LogBlockedCommand(const char *entityClass, const char *cmdName, cons
 		cmdValue ? cmdValue : "null");
 }
 
+//-----------------------------------------------------------------------------
+// Глобальный rate-limit для point_command сущностей (защита от флуда).
+// Управляется cvar mp_point_command_cooldown (0 = отключено).
+//-----------------------------------------------------------------------------
+static bool PointCommandCooldownReady()
+{
+	if (point_command_cooldown.value <= 0.0f)
+		return true;
+
+	static float flLastUse = -1.0f;
+	const float now = gpGlobals->time;
+
+	if (flLastUse >= 0.0f && now - flLastUse < point_command_cooldown.value)
+		return false;
+
+	flLastUse = now;
+	return true;
+}
+
 void CPointBaseCommand::KeyValue(KeyValueData *pkvd)
 {
 	// add this field to the command list
@@ -99,6 +118,9 @@ LINK_ENTITY_TO_CLASS(point_clientcommand, CPointClientCommand, CCSPointClientCom
 
 void CPointClientCommand::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
+	if (!PointCommandCooldownReady())
+		return;
+
 	edict_t *pClient = nullptr;
 	if (gpGlobals->maxClients == 1)
 	{
@@ -150,6 +172,9 @@ LINK_ENTITY_TO_CLASS(point_servercommand, CPointServerCommand, CCSPointServerCom
 
 void CPointServerCommand::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
+	if (!PointCommandCooldownReady())
+		return;
+
 #ifdef REGAMEDLL_ADD
 	if (!allow_point_servercommand.value) {
 		ALERT(at_warning, "point_servercommand usage blocked by mp_allow_point_servercommand setting\n");
