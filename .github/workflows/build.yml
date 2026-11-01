@@ -2,7 +2,7 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
     paths-ignore:
       - '**.md'
       - '.github/**'
@@ -32,6 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          submodules: recursive
           fetch-depth: 0
 
       - name: Setup MSBuild
@@ -134,6 +135,10 @@ jobs:
           KEY_PFX_PASS: ${{ secrets.KEY_PFX_PASS }}
         # https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md
         run: |
+               if ([string]::IsNullOrEmpty("${{ secrets.KEY_PFX_B64 }}")) {
+                 Write-Host "Code signing secrets (KEY_PFX_B64) are not configured; skipping signing."
+                 exit 0
+               }
                $pfxBase64 = "${{ secrets.KEY_PFX_B64 }}"
                [IO.File]::WriteAllBytes("${{ github.workspace }}\signing-cert.pfx", [Convert]::FromBase64String($pfxBase64))
                certutil -f -p "${{ secrets.KEY_PFX_PASS }}" -importPFX "${{ github.workspace }}\signing-cert.pfx"
@@ -230,6 +235,11 @@ jobs:
 
       - name: GPG Import
         run: |
+          if [ -z "${{ secrets.PUB_ASC_FILE }}" ] || [ -z "${{ secrets.PUB_ASC }}" ]; then
+            echo "GPG signing secrets (PUB_ASC/PUB_ASC_FILE) are not configured; skipping signing."
+            exit 0
+          fi
+
           echo "${{ secrets.PUB_ASC }}" > "${{ secrets.PUB_ASC_FILE }}"
           echo "${{ secrets.KEY_ASC }}" > "${{ secrets.KEY_ASC_FILE }}"
 
@@ -368,7 +378,15 @@ jobs:
           rsync -a dist/ bin/win32/cstrike
           rsync -a dist/ bin/linux32/cstrike
 
-          # new runner, niw signs
+          # Pack final archive (independent of signing)
+          7z a -tzip regamedll-bin-${{ env.APP_VERSION }}.zip bin/ cssdk/
+
+          # Sign only when GPG secrets are configured
+          if [ -z "${{ secrets.PUB_ASC_FILE }}" ] || [ -z "${{ secrets.PUB_ASC }}" ]; then
+            echo "GPG signing secrets are not configured; skipping signing."
+            exit 0
+          fi
+
           echo "${{ secrets.PUB_ASC }}" > "${{ secrets.PUB_ASC_FILE }}"
           echo "${{ secrets.KEY_ASC }}" > "${{ secrets.KEY_ASC_FILE }}"
           gpg --batch --yes --import "${{ secrets.PUB_ASC_FILE }}"
@@ -387,8 +405,6 @@ jobs:
             echo "$file signed successfully."
           }
 
-          # Pack and sign final archive
-          7z a -tzip regamedll-bin-${{ env.APP_VERSION }}.zip bin/ cssdk/
           sign_file "regamedll-bin-${{ env.APP_VERSION }}.zip"
 
       - name: Publish artifacts
