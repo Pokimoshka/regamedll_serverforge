@@ -11,25 +11,9 @@ float anglemod(float a)
 
 void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 {
-	float sr, sp, sy, cr, cp, cy;
+	float sr, sp, sy, cr, cp;
 
-#if defined(HAVE_SSE) && !defined(PLAY_GAMEDLL)
-	// SSE-optimized: вычисляем sin/cos всех трёх углов одним sincos_ps вызовом
-	// вместо 6 отдельных sin/cos. Порядок элементов: [0]=YAW, [1]=PITCH, [2]=ROLL, [3]=unused
-	v4sf ang = _mm_set_ps(0.0f, angles[ROLL], angles[PITCH], angles[YAW]);
-	ang = _mm_mul_ps(ang, _mm_set1_ps((float)(M_PI * 2.0 / 360.0)));
-
-	v4sf s, c;
-	sincos_ps(ang, &s, &c);
-
-	float s_arr[4], c_arr[4];
-	_mm_storeu_ps(s_arr, s);
-	_mm_storeu_ps(c_arr, c);
-
-	sy = s_arr[0]; cy = c_arr[0]; // YAW
-	sp = s_arr[1]; cp = c_arr[1]; // PITCH
-	sr = s_arr[2]; cr = c_arr[2]; // ROLL
-#else
+	real_t cy;
 	real_t angle;
 
 	angle = real_t(angles[YAW] * (M_PI * 2 / 360));
@@ -43,7 +27,6 @@ void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 	angle = real_t(angles[ROLL] * (M_PI * 2 / 360));
 	sr = Q_sin(angle);
 	cr = Q_cos(angle);
-#endif
 
 	if (forward)
 	{
@@ -67,25 +50,8 @@ void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 
 void AngleVectorsTranspose(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 {
-	float sr, sp, sy, cr, cp, cy;
-
-#if defined(HAVE_SSE) && !defined(PLAY_GAMEDLL)
-	// SSE-optimized: вычисляем sin/cos всех трёх углов одним sincos_ps вызовом
-	v4sf ang = _mm_set_ps(0.0f, angles[ROLL], angles[PITCH], angles[YAW]);
-	ang = _mm_mul_ps(ang, _mm_set1_ps((float)(M_PI * 2.0 / 360.0)));
-
-	v4sf s, c;
-	sincos_ps(ang, &s, &c);
-
-	float s_arr[4], c_arr[4];
-	_mm_storeu_ps(s_arr, s);
-	_mm_storeu_ps(c_arr, c);
-
-	sy = s_arr[0]; cy = c_arr[0]; // YAW
-	sp = s_arr[1]; cp = c_arr[1]; // PITCH
-	sr = s_arr[2]; cr = c_arr[2]; // ROLL
-#else
 	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
 	sy = Q_sin(angle);
@@ -96,7 +62,6 @@ void AngleVectorsTranspose(const vec_t *angles, vec_t *forward, vec_t *right, ve
 	angle = angles[ROLL] * (M_PI * 2 / 360);
 	sr = Q_sin(angle);
 	cr = Q_cos(angle);
-#endif
 
 	if (forward)
 	{
