@@ -13,7 +13,7 @@ void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 {
 	float sr, sp, sy, cr, cp, cy;
 
-#ifdef HAVE_SSE
+#if defined(HAVE_SSE) && !defined(PLAY_GAMEDLL)
 	// SSE-optimized: вычисляем sin/cos всех трёх углов одним sincos_ps вызовом
 	// вместо 6 отдельных sin/cos. Порядок элементов: [0]=YAW, [1]=PITCH, [2]=ROLL, [3]=unused
 	v4sf ang = _mm_set_ps(0.0f, angles[ROLL], angles[PITCH], angles[YAW]);
@@ -69,7 +69,7 @@ void AngleVectorsTranspose(const vec_t *angles, vec_t *forward, vec_t *right, ve
 {
 	float sr, sp, sy, cr, cp, cy;
 
-#ifdef HAVE_SSE
+#if defined(HAVE_SSE) && !defined(PLAY_GAMEDLL)
 	// SSE-optimized: вычисляем sin/cos всех трёх углов одним sincos_ps вызовом
 	v4sf ang = _mm_set_ps(0.0f, angles[ROLL], angles[PITCH], angles[YAW]);
 	ang = _mm_mul_ps(ang, _mm_set1_ps((float)(M_PI * 2.0 / 360.0)));
