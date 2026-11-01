@@ -257,7 +257,7 @@ void GameDLL_SwapTeams_f()
 
 #endif // REGAMEDLL_ADD
 
-cvar_t point_servercommand_whitelist = { "mp_point_servercommand_whitelist", "", FCVAR_SERVER, 0.0f, nullptr };
+cvar_t point_servercommand_whitelist = { "mp_point_servercommand_whitelist", "", FCVAR_SPONLY, 0.0f, nullptr };
 
 SpewRetval_t GameDLL_SpewHandler(SpewType_t spewType, int level, const char *pMsg);
 
