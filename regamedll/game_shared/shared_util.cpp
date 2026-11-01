@@ -41,7 +41,7 @@ char *SharedVarArgs(char *format, ...)
 char *BufPrintf(char *buf, int &len, const char *fmt, ...)
 {
 	va_list argptr;
-	if (len > 0)
+	if (len > 0 && buf != nullptr)
 	{
 		const int startLen = Q_strlen(buf);
 
@@ -60,7 +60,7 @@ char *BufPrintf(char *buf, int &len, const char *fmt, ...)
 
 wchar_t *BufWPrintf(wchar_t *buf, int &len, const wchar_t *fmt, ...)
 {
-	if (len <= 0)
+	if (len <= 0 || buf == nullptr)
 		return nullptr;
 
 	va_list argptr;
