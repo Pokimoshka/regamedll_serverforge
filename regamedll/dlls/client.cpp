@@ -5225,16 +5225,16 @@ BOOL EXT_FUNC GetHullBounds(int hullnumber, float *mins, float *maxs)
 	switch (hullnumber)
 	{
 	case 0: // Normal player
-		Q_memcpy(mins, (float*)VEC_HULL_MIN, sizeof(vec3_t));
-		Q_memcpy(maxs, (float*)VEC_HULL_MAX, sizeof(vec3_t));
+		mins = VEC_HULL_MIN;
+		maxs = VEC_HULL_MAX;
 		return TRUE;
 	case 1: // Crouched player
-		Q_memcpy(mins, (float*)VEC_DUCK_HULL_MIN, sizeof(vec3_t));
-		Q_memcpy(maxs, (float*)VEC_DUCK_HULL_MAX, sizeof(vec3_t));
+		mins = VEC_DUCK_HULL_MIN;
+		maxs = VEC_DUCK_HULL_MAX;
 		return TRUE;
 	case 2: // Point based hull
-		Q_memcpy(mins, (float*)Vector(0, 0, 0), sizeof(vec3_t));
-		Q_memcpy(maxs, (float*)Vector(0, 0, 0), sizeof(vec3_t));
+		mins = Vector(0, 0, 0);
+		maxs = Vector(0, 0, 0);
 		return TRUE;
 	default:
 		return FALSE;
