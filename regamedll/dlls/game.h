@@ -170,7 +170,6 @@ extern cvar_t buy_anywhere;
 extern cvar_t give_player_c4;
 extern cvar_t weapons_allow_map_placed;
 extern cvar_t allow_point_servercommand;
-extern cvar_t point_servercommand_whitelist;
 extern cvar_t hullbounds_sets;
 extern cvar_t unduck_method;
 extern cvar_t ff_damage_reduction_bullets;
@@ -225,6 +224,8 @@ extern cvar_t knife_wall_sparks;
 extern cvar_t show_bomb_timer;
 
 #endif
+
+extern cvar_t point_servercommand_whitelist;
 
 extern cvar_t scoreboard_showmoney;
 extern cvar_t scoreboard_showhealth;

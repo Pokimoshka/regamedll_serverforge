@@ -142,7 +142,6 @@ cvar_t give_player_c4               = { "mp_give_player_c4", "1", FCVAR_SERVER, 
 cvar_t weapons_allow_map_placed     = { "mp_weapons_allow_map_placed", "1", FCVAR_SERVER, 0.0f, nullptr };
 
 cvar_t allow_point_servercommand    = { "mp_allow_point_servercommand", "0", 0, 0.0f, nullptr };
-cvar_t point_servercommand_whitelist = { "mp_point_servercommand_whitelist", "", FCVAR_SERVER, 0.0f, nullptr };
 cvar_t hullbounds_sets              = { "mp_hullbounds_sets", "1", 0, 0.0f, nullptr };
 cvar_t unduck_method                = { "mp_unduck_method", "0", 0, 0.0f, nullptr };
 
@@ -257,6 +256,8 @@ void GameDLL_SwapTeams_f()
 }
 
 #endif // REGAMEDLL_ADD
+
+cvar_t point_servercommand_whitelist = { "mp_point_servercommand_whitelist", "", FCVAR_SERVER, 0.0f, nullptr };
 
 SpewRetval_t GameDLL_SpewHandler(SpewType_t spewType, int level, const char *pMsg);
 
@@ -432,7 +433,6 @@ void EXT_FUNC GameDLLInit()
 	CVAR_REGISTER(&buy_anywhere);
 	CVAR_REGISTER(&give_player_c4);
 	CVAR_REGISTER(&allow_point_servercommand);
-	CVAR_REGISTER(&point_servercommand_whitelist);
 	CVAR_REGISTER(&hullbounds_sets);
 	CVAR_REGISTER(&unduck_method);
 	CVAR_REGISTER(&weapons_allow_map_placed);
@@ -511,6 +511,8 @@ void EXT_FUNC GameDLLInit()
 	SERVER_EXECUTE();
 
 #endif // REGAMEDLL_ADD
+
+	CVAR_REGISTER(&point_servercommand_whitelist);
 
 	Regamedll_Game_Init();
 
